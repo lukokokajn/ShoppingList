@@ -10,6 +10,24 @@ interface ShoppingListDetailProps {
   listId: string;
   onBack: () => void;
   onBackToDocs?: () => void;
+  initialData: {
+    id: string;
+    name: string;
+    ownerId: string;
+    items: Array<{
+      id: string;
+      name: string;
+      isResolved: boolean;
+      createdAt: Date;
+      createdBy: string;
+    }>;
+    members: Array<{
+      id: string;
+      name: string;
+      role: 'owner' | 'member';
+      addedAt: Date;
+    }>;
+  };
 }
 
 export interface ShoppingItem {
@@ -27,67 +45,15 @@ export interface Member {
   addedAt: Date;
 }
 
-const MOCK_DATA = {
-  '1': {
-    name: 'Týdenní nákup',
-    ownerId: 'user1',
-    items: [
-      { id: '1', name: 'Mléko', isResolved: false, createdAt: new Date('2025-10-28'), createdBy: 'user1' },
-      { id: '2', name: 'Chléb', isResolved: true, createdAt: new Date('2025-10-28'), createdBy: 'user2' },
-      { id: '3', name: 'Máslo', isResolved: false, createdAt: new Date('2025-10-29'), createdBy: 'user1' },
-      { id: '4', name: 'Vajíčka', isResolved: false, createdAt: new Date('2025-10-30'), createdBy: 'user1' },
-      { id: '5', name: 'Rajčata', isResolved: true, createdAt: new Date('2025-10-30'), createdBy: 'user2' },
-      { id: '6', name: 'Sýr', isResolved: false, createdAt: new Date('2025-10-31'), createdBy: 'user3' },
-      { id: '7', name: 'Jogurt', isResolved: false, createdAt: new Date('2025-11-01'), createdBy: 'user1' },
-    ],
-    members: [
-      { id: 'user1', name: 'Jan Novák', role: 'owner' as const, addedAt: new Date('2025-10-10') },
-      { id: 'user2', name: 'Marie Nováková', role: 'member' as const, addedAt: new Date('2025-10-11') },
-      { id: 'user3', name: 'Petr Svoboda', role: 'member' as const, addedAt: new Date('2025-10-15') },
-    ],
-  },
-  '2': {
-    name: 'Party potřeby',
-    ownerId: 'user2',
-    items: [
-      { id: '1', name: 'Balónky', isResolved: true, createdAt: new Date('2025-10-25'), createdBy: 'user2' },
-      { id: '2', name: 'Papírové talíře', isResolved: false, createdAt: new Date('2025-10-26'), createdBy: 'user2' },
-      { id: '3', name: 'Kelímky', isResolved: false, createdAt: new Date('2025-10-26'), createdBy: 'user1' },
-      { id: '4', name: 'Ubrousky', isResolved: false, createdAt: new Date('2025-10-27'), createdBy: 'user2' },
-      { id: '5', name: 'Nápoje', isResolved: false, createdAt: new Date('2025-10-28'), createdBy: 'user1' },
-    ],
-    members: [
-      { id: 'user2', name: 'Marie Nováková', role: 'owner' as const, addedAt: new Date('2025-10-15') },
-      { id: 'user1', name: 'Jan Novák', role: 'member' as const, addedAt: new Date('2025-10-16') },
-      { id: 'user4', name: 'Anna Dvořáková', role: 'member' as const, addedAt: new Date('2025-10-17') },
-    ],
-  },
-  '3': {
-    name: 'Domácí potřeby',
-    ownerId: 'user1',
-    items: [
-      { id: '1', name: 'Mýdlo', isResolved: false, createdAt: new Date('2025-10-20'), createdBy: 'user1' },
-      { id: '2', name: 'Šampon', isResolved: false, createdAt: new Date('2025-10-21'), createdBy: 'user1' },
-      { id: '3', name: 'Zubní pasta', isResolved: true, createdAt: new Date('2025-10-22'), createdBy: 'user1' },
-      { id: '4', name: 'Papírové ručníky', isResolved: false, createdAt: new Date('2025-10-23'), createdBy: 'user1' },
-    ],
-    members: [
-      { id: 'user1', name: 'Jan Novák', role: 'owner' as const, addedAt: new Date('2025-10-05') },
-    ],
-  },
-};
-
 const CURRENT_USER_ID = 'user1';
 
-export function ShoppingListDetail({ listId, onBack, onBackToDocs }: ShoppingListDetailProps) {
-  const data = MOCK_DATA[listId as keyof typeof MOCK_DATA] || MOCK_DATA['1'];
-  
-  // Inicializace stavu s daty z konstanty
-  const [listName, setListName] = useState(data.name);
-  const [items, setItems] = useState<ShoppingItem[]>(data.items);
-  const [members, setMembers] = useState<Member[]>(data.members);
+export function ShoppingListDetail({ listId, onBack, onBackToDocs, initialData }: ShoppingListDetailProps) {
+  // Inicializace stavu s daty z props
+  const [listName, setListName] = useState(initialData.name);
+  const [items, setItems] = useState<ShoppingItem[]>(initialData.items);
+  const [members, setMembers] = useState<Member[]>(initialData.members);
 
-  const isOwner = data.ownerId === CURRENT_USER_ID;
+  const isOwner = initialData.ownerId === CURRENT_USER_ID;
 
   const handleUpdateName = (newName: string) => {
     setListName(newName);
