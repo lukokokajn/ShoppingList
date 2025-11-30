@@ -5,9 +5,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu';
-import { ArrowLeft, MoreVertical, Archive, Edit2, Check, X } from 'lucide-react';
+import { ArrowLeft, MoreVertical, Archive, Edit2, Check, X, Trash2 } from 'lucide-react';
 
 interface DetailHeaderProps {
   listName: string;
@@ -15,6 +16,7 @@ interface DetailHeaderProps {
   onBack: () => void;
   onUpdateName: (newName: string) => void;
   onArchive: () => void;
+  onDelete?: () => void;
 }
 
 export function DetailHeader({ 
@@ -22,7 +24,8 @@ export function DetailHeader({
   isOwner, 
   onBack, 
   onUpdateName, 
-  onArchive 
+  onArchive,
+  onDelete
 }: DetailHeaderProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(listName);
@@ -93,6 +96,18 @@ export function DetailHeader({
                 <Archive className="w-4 h-4 mr-2" />
                 Archivovat
               </DropdownMenuItem>
+              {onDelete && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={onDelete}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Smazat seznam
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         )}

@@ -1,254 +1,264 @@
-import { useState } from 'react';
+// src/App.tsx
+import { useEffect, useState } from 'react';
 import { ShoppingListDetail } from './components/ShoppingListDetail';
 import { Button } from './components/ui/button';
-import { List, Plus } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 import { Toaster } from './components/ui/sonner';
 import { Input } from './components/ui/input';
 import { Label } from './components/ui/label';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
+import { ListHeader } from './components/overview/ListHeader';
+import { ListFilter } from './components/overview/ListFilter';
+import { ListsGrid } from './components/overview/ListsGrid';
 
-// Dostupné seznamy pro testování
-interface ShoppingListData {
-  id: string;
-  name: string;
-  ownerId: string;
-  items: Array<{
-    id: string;
-    name: string;
-    isResolved: boolean;
-    createdAt: Date;
-    createdBy: string;
-  }>;
-  members: Array<{
-    id: string;
-    name: string;
-    role: 'owner' | 'member';
-    addedAt: Date;
-  }>;
-}
-
-const INITIAL_LISTS: ShoppingListData[] = [
-  {
-    id: '1',
-    name: 'Týdenní nákup',
-    ownerId: 'user1',
-    items: [
-      { id: '1', name: 'Mléko', isResolved: false, createdAt: new Date('2025-10-28'), createdBy: 'user1' },
-      { id: '2', name: 'Chléb', isResolved: true, createdAt: new Date('2025-10-28'), createdBy: 'user2' },
-      { id: '3', name: 'Máslo', isResolved: false, createdAt: new Date('2025-10-29'), createdBy: 'user1' },
-      { id: '4', name: 'Vajíčka', isResolved: false, createdAt: new Date('2025-10-30'), createdBy: 'user1' },
-      { id: '5', name: 'Rajčata', isResolved: true, createdAt: new Date('2025-10-30'), createdBy: 'user2' },
-      { id: '6', name: 'Sýr', isResolved: false, createdAt: new Date('2025-10-31'), createdBy: 'user3' },
-      { id: '7', name: 'Jogurt', isResolved: false, createdAt: new Date('2025-11-01'), createdBy: 'user1' },
-    ],
-    members: [
-      { id: 'user1', name: 'Jan Novák', role: 'owner', addedAt: new Date('2025-10-10') },
-      { id: 'user2', name: 'Marie Nováková', role: 'member', addedAt: new Date('2025-10-11') },
-      { id: 'user3', name: 'Petr Svoboda', role: 'member', addedAt: new Date('2025-10-15') },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Party potřeby',
-    ownerId: 'user2',
-    items: [
-      { id: '1', name: 'Balónky', isResolved: true, createdAt: new Date('2025-10-25'), createdBy: 'user2' },
-      { id: '2', name: 'Papírové talíře', isResolved: false, createdAt: new Date('2025-10-26'), createdBy: 'user2' },
-      { id: '3', name: 'Kelímky', isResolved: false, createdAt: new Date('2025-10-26'), createdBy: 'user1' },
-      { id: '4', name: 'Ubrousky', isResolved: false, createdAt: new Date('2025-10-27'), createdBy: 'user2' },
-      { id: '5', name: 'Nápoje', isResolved: false, createdAt: new Date('2025-10-28'), createdBy: 'user1' },
-    ],
-    members: [
-      { id: 'user2', name: 'Marie Nováková', role: 'owner', addedAt: new Date('2025-10-15') },
-      { id: 'user1', name: 'Jan Novák', role: 'member', addedAt: new Date('2025-10-16') },
-      { id: 'user4', name: 'Anna Dvořáková', role: 'member', addedAt: new Date('2025-10-17') },
-    ],
-  },
-  {
-    id: '3',
-    name: 'Domácí potřeby',
-    ownerId: 'user1',
-    items: [
-      { id: '1', name: 'Mýdlo', isResolved: false, createdAt: new Date('2025-10-20'), createdBy: 'user1' },
-      { id: '2', name: 'Šampon', isResolved: false, createdAt: new Date('2025-10-21'), createdBy: 'user1' },
-      { id: '3', name: 'Zubní pasta', isResolved: true, createdAt: new Date('2025-10-22'), createdBy: 'user1' },
-      { id: '4', name: 'Papírové ručníky', isResolved: false, createdAt: new Date('2025-10-23'), createdBy: 'user1' },
-    ],
-    members: [
-      { id: 'user1', name: 'Jan Novák', role: 'owner', addedAt: new Date('2025-10-05') },
-    ],
-  },
-];
+import { api } from './api';
+import { ShoppingList } from './api/types';
 
 const CURRENT_USER_ID = 'user1';
+const CURRENT_USER_NAME = 'Jan Novák';
 
 export default function App() {
-  const [shoppingLists, setShoppingLists] = useState<ShoppingListData[]>(INITIAL_LISTS);
-  const [selectedListId, setSelectedListId] = useState<string>('1');
-  const [showListSelector, setShowListSelector] = useState(false);
+  const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
+  const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [isCreatingList, setIsCreatingList] = useState(false);
   const [newListName, setNewListName] = useState('');
+  const [activeFilter, setActiveFilter] = useState<'active' | 'archived'>('active');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const selectedList = shoppingLists.find(list => list.id === selectedListId) || shoppingLists[0];
+  useEffect(() => {
+    const loadLists = async () => {
+      try {
+        const lists = await api.getLists();
+        setShoppingLists(lists);
+      } catch (e) {
+        console.error(e);
+        toast.error('Nepodařilo se načíst seznamy');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleCreateList = () => {
+    loadLists();
+  }, []);
+
+  const selectedList = selectedListId
+      ? shoppingLists.find((list) => list.id === selectedListId) ?? null
+      : null;
+
+  const handleCreateList = async () => {
     if (!newListName.trim()) {
       toast.error('Název nesmí být prázdný');
       return;
     }
 
-    const newList: ShoppingListData = {
-      id: Date.now().toString(),
-      name: newListName.trim(),
-      ownerId: CURRENT_USER_ID,
-      items: [],
-      members: [
-        {
-          id: CURRENT_USER_ID,
-          name: 'Jan Novák',
-          role: 'owner',
-          addedAt: new Date(),
-        },
-      ],
-    };
+    try {
+      const newList = await api.createList(newListName.trim(), CURRENT_USER_ID, CURRENT_USER_NAME);
+      setShoppingLists((prev) => [newList, ...prev]);
+      setNewListName('');
+      setIsCreatingList(false);
 
-    setShoppingLists([...shoppingLists, newList]);
-    setSelectedListId(newList.id);
-    setNewListName('');
-    setIsCreatingList(false);
-    setShowListSelector(false);
-    
-    toast.success('Seznam vytvořen', {
-      description: `"${newList.name}" byl úspěšně vytvořen`,
-    });
+      toast.success('Seznam vytvořen', {
+        description: `"${newList.name}" byl úspěšně vytvořen`,
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error('Nepodařilo se vytvořit seznam');
+    }
   };
 
-  return (
-    <div className="size-full bg-[#fafafa]">
-      <Toaster />
-      
-      {/* Navigační panel pro přepínání mezi seznamy (pro demonstraci) */}
-      {showListSelector && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center" onClick={() => {
-          setShowListSelector(false);
-          setIsCreatingList(false);
-          setNewListName('');
-        }}>
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full m-4 max-h-[80vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            {!isCreatingList ? (
-              <>
-                <h2 className="mb-2">Vyberte nákupní seznam</h2>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Přepněte se mezi různými seznamy nebo vytvořte nový
-                </p>
-                
-                <Button
-                  variant="outline"
-                  className="w-full justify-start mb-4 border-dashed border-2"
-                  onClick={() => setIsCreatingList(true)}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Vytvořit nový seznam
-                </Button>
+  const handleDeleteList = async (id: string) => {
+    const list = shoppingLists.find((l) => l.id === id);
+    if (!list) return;
 
-                <div className="space-y-2">
-                  {shoppingLists.map(list => (
-                    <Button
-                      key={list.id}
-                      variant={selectedListId === list.id ? 'default' : 'outline'}
-                      className="w-full justify-start"
+    try {
+      await api.deleteList(id);
+      setShoppingLists((prev) => prev.filter((l) => l.id !== id));
+      if (selectedListId === id) {
+        setSelectedListId(null);
+      }
+      toast.success('Seznam smazán', {
+        description: `"${list.name}" byl úspěšně smazán`,
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error('Nepodařilo se smazat seznam');
+    }
+  };
+
+  const handleDeleteCurrentList = () => {
+    if (selectedListId) {
+      handleDeleteList(selectedListId);
+    }
+  };
+
+  const handleArchiveList = async (id: string) => {
+    const list = shoppingLists.find((l) => l.id === id);
+    if (!list) return;
+
+    try {
+      const updated = await api.toggleArchiveList(id);
+      setShoppingLists((prev) =>
+          prev.map((l) => (l.id === updated.id ? updated : l))
+      );
+
+      toast.success(updated.isArchived ? 'Seznam archivován' : 'Seznam obnoven', {
+        description: `"${updated.name}" byl úspěšně ${
+            updated.isArchived ? 'archivován' : 'obnoven'
+        }`,
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error('Nepodařilo se změnit stav seznamu');
+    }
+  };
+
+  const handleViewList = (id: string) => {
+    setSelectedListId(id);
+  };
+
+  const handleBackToOverview = () => {
+    setSelectedListId(null);
+  };
+
+  const handleListChange = (updated: ShoppingList) => {
+    setShoppingLists((prev) =>
+        prev.map((l) => (l.id === updated.id ? updated : l))
+    );
+  };
+
+  const listsForDisplay = shoppingLists.map((list) => ({
+    id: list.id,
+    name: list.name,
+    ownerId: list.ownerId,
+    ownerName: list.members.find((m) => m.id === list.ownerId)?.name || 'Neznámý',
+    members: list.members,
+    itemCount: list.items.length,
+    resolvedItemCount: list.items.filter((i) => i.isResolved).length,
+    isArchived: list.isArchived,
+    createdAt: list.createdAt,
+  }));
+
+  const filteredLists = listsForDisplay.filter((list) =>
+      activeFilter === 'active' ? !list.isArchived : list.isArchived
+  );
+
+  if (isLoading) {
+    return (
+        <div className="size-full bg-background flex items-center justify-center">
+          <Toaster />
+          <div className="text-muted-foreground">Načítám seznamy…</div>
+        </div>
+    );
+  }
+
+
+  if (selectedList && selectedListId) {
+    return (
+        <div className="size-full bg-[#fafafa]">
+          <Toaster />
+          <ShoppingListDetail
+              key={selectedListId}
+              list={selectedList}
+              currentUserId={CURRENT_USER_ID}
+              onBack={handleBackToOverview}
+              onDelete={() => handleDeleteList(selectedListId)}
+              onListChange={handleListChange}
+          />
+        </div>
+    );
+  }
+
+  return (
+      <div className="size-full bg-background">
+        <Toaster />
+
+        {/* Dialog pro vytvoření nového seznamu */}
+        {isCreatingList && (
+            <div
+                className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
+                onClick={() => {
+                  setIsCreatingList(false);
+                  setNewListName('');
+                }}
+            >
+              <div
+                  className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full m-4"
+                  onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <h2>Vytvořit nový seznam</h2>
+                  <Button
+                      variant="ghost"
+                      size="icon"
                       onClick={() => {
-                        setSelectedListId(list.id);
-                        setShowListSelector(false);
+                        setIsCreatingList(false);
+                        setNewListName('');
                       }}
-                    >
-                      <List className="w-4 h-4 mr-2" />
-                      {list.name}
-                      {selectedListId === list.id && (
-                        <span className="ml-auto text-xs opacity-70">Aktuální</span>
-                      )}
-                    </Button>
-                  ))}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
                 </div>
-                
-                <Button
-                  variant="ghost"
-                  className="w-full mt-4"
-                  onClick={() => setShowListSelector(false)}
-                >
-                  Zavřít
-                </Button>
-              </>
-            ) : (
-              <>
-                <h2 className="mb-2">Vytvořit nový seznam</h2>
+
                 <p className="text-sm text-muted-foreground mb-4">
                   Zadejte název pro nový nákupní seznam
                 </p>
 
                 <div className="space-y-4">
-                  <div>
+                  <div className="space-y-2">
                     <Label htmlFor="list-name">Název seznamu</Label>
                     <Input
-                      id="list-name"
-                      value={newListName}
-                      onChange={(e) => setNewListName(e.target.value)}
-                      placeholder="např. Víkendový nákup"
-                      autoFocus
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          handleCreateList();
-                        }
-                      }}
+                        id="list-name"
+                        value={newListName}
+                        onChange={(e) => setNewListName(e.target.value)}
+                        placeholder="např. Víkendový nákup"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            handleCreateList();
+                          }
+                        }}
                     />
                   </div>
 
+
                   <div className="flex gap-2">
-                    <Button
-                      onClick={handleCreateList}
-                      className="flex-1"
-                    >
+                    <Button onClick={handleCreateList} className="flex-1">
                       Vytvořit seznam
                     </Button>
                     <Button
-                      variant="outline"
-                      onClick={() => {
-                        setIsCreatingList(false);
-                        setNewListName('');
-                      }}
+                        variant="outline"
+                        onClick={() => {
+                          setIsCreatingList(false);
+                          setNewListName('');
+                        }}
                     >
                       Zrušit
                     </Button>
                   </div>
                 </div>
-              </>
-            )}
+              </div>
+            </div>
+        )}
+
+        {/* Přehled nákupních seznamů */}
+        <div className="min-h-screen">
+          <div className="max-w-7xl mx-auto p-6">
+            <ListHeader
+                onCreateList={() => setIsCreatingList(true)}
+                currentUser={{ id: CURRENT_USER_ID, name: CURRENT_USER_NAME }}
+            />
+
+            <ListFilter activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+
+            <ListsGrid
+                lists={filteredLists}
+                currentUserId={CURRENT_USER_ID}
+                onViewList={handleViewList}
+                onDeleteList={handleDeleteList}
+                onArchiveList={handleArchiveList}
+            />
           </div>
         </div>
-      )}
-
-      {/* Tlačítko pro otevření selektoru seznamů */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <Button
-          onClick={() => setShowListSelector(true)}
-          className="gap-2 shadow-lg"
-          size="lg"
-        >
-          <List className="w-5 h-5" />
-          Přepnout seznam
-        </Button>
       </div>
-
-      {/* Detail nákupního seznamu */}
-      <ShoppingListDetail 
-        key={selectedListId}
-        listId={selectedListId}
-        initialData={selectedList}
-        onBack={() => {
-          // V reálné aplikaci s routerem by zde byla navigace zpět na přehled
-          setShowListSelector(true);
-        }}
-      />
-    </div>
   );
 }

@@ -1,7 +1,7 @@
 import { Checkbox } from '../ui/checkbox';
 import { Button } from '../ui/button';
 import { Trash2 } from 'lucide-react';
-import type { ShoppingItem } from '../ShoppingListDetail';
+import type { ShoppingItem } from '../../api/types';
 
 interface ItemRowProps {
   item: ShoppingItem;
@@ -27,7 +27,7 @@ export function ItemRow({ item, onToggle, onDelete }: ItemRowProps) {
         variant="ghost"
         size="icon"
         onClick={() => onDelete(item.id)}
-        className="opacity-0 group-hover:opacity-100 transition-opacity"
+        className="shrink-0"
       >
         <Trash2 className="w-4 h-4 text-destructive" />
       </Button>

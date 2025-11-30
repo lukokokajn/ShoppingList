@@ -4,188 +4,245 @@ import { ItemsSection } from './detail/ItemsSection';
 import { MembersSection } from './detail/MembersSection';
 import { Button } from './ui/button';
 import { ArrowLeft } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
+import { api } from '../api';
+import { Member, ShoppingItem, ShoppingList } from '../api/types';
 
 interface ShoppingListDetailProps {
-  listId: string;
+  list: ShoppingList;
+  currentUserId: string;
   onBack: () => void;
   onBackToDocs?: () => void;
-  initialData: {
-    id: string;
-    name: string;
-    ownerId: string;
-    items: Array<{
-      id: string;
-      name: string;
-      isResolved: boolean;
-      createdAt: Date;
-      createdBy: string;
-    }>;
-    members: Array<{
-      id: string;
-      name: string;
-      role: 'owner' | 'member';
-      addedAt: Date;
-    }>;
-  };
+  onDelete?: () => void;
+  onListChange: (list: ShoppingList) => void;
 }
 
-export interface ShoppingItem {
-  id: string;
-  name: string;
-  isResolved: boolean;
-  createdAt: Date;
-  createdBy: string;
-}
+export function ShoppingListDetail({
+                                     list,
+                                     currentUserId,
+                                     onBack,
+                                     onBackToDocs,
+                                     onDelete,
+                                     onListChange,
+                                   }: ShoppingListDetailProps) {
+  // lokální UI state, ale primárně se opíráme o data z backendu
+  const [listName, setListName] = useState(list.name);
+  const [items, setItems] = useState<ShoppingItem[]>(list.items);
+  const [members, setMembers] = useState<Member[]>(list.members);
 
-export interface Member {
-  id: string;
-  name: string;
-  role: 'owner' | 'member';
-  addedAt: Date;
-}
+  const isOwner = list.ownerId === currentUserId;
 
-const CURRENT_USER_ID = 'user1';
-
-export function ShoppingListDetail({ listId, onBack, onBackToDocs, initialData }: ShoppingListDetailProps) {
-  // Inicializace stavu s daty z props
-  const [listName, setListName] = useState(initialData.name);
-  const [items, setItems] = useState<ShoppingItem[]>(initialData.items);
-  const [members, setMembers] = useState<Member[]>(initialData.members);
-
-  const isOwner = initialData.ownerId === CURRENT_USER_ID;
-
-  const handleUpdateName = (newName: string) => {
-    setListName(newName);
-    toast.success('Název upraven', {
-      description: `Seznam byl přejmenován na "${newName}"`,
-    });
-  };
-
-  const handleArchive = () => {
-    toast.success('Seznam byl archivován', {
-      description: `"${listName}" byl přesunut do archivu`,
-    });
-    // V reálné aplikaci by se zde provedla archivace na serveru
-  };
-
-  const handleAddItem = (name: string) => {
-    const newItem: ShoppingItem = {
-      id: Date.now().toString(),
-      name,
-      isResolved: false,
-      createdAt: new Date(),
-      createdBy: CURRENT_USER_ID,
+  // Pomocná funkce – po každé změně aktualizuje rodiče (App), aby měl čerstvý list
+  const syncAndPropagate = (updatedPartial?: Partial<ShoppingList>) => {
+    const updated: ShoppingList = {
+      ...list,
+      name: updatedPartial?.name ?? listName,
+      items: updatedPartial?.items ?? items,
+      members: updatedPartial?.members ?? members,
+      isArchived: updatedPartial?.isArchived ?? list.isArchived,
     };
-    setItems([newItem, ...items]);
-    toast.success('Položka přidána', {
-      description: `"${name}" byla přidána do seznamu`,
-    });
+    onListChange(updated);
   };
 
-  const handleToggleItem = (id: string) => {
-    const item = items.find(i => i.id === id);
-    setItems(items.map(item =>
-      item.id === id ? { ...item, isResolved: !item.isResolved } : item
-    ));
-    if (item) {
-      toast.success(item.isResolved ? 'Položka označena jako nevyřešená' : 'Položka vyřešena');
+  const handleUpdateName = async (newName: string) => {
+    if (!newName.trim()) {
+      toast.error('Název nesmí být prázdný');
+      return;
+    }
+
+    try {
+      const updated = await api.updateListName(list.id, newName.trim());
+      setListName(updated.name);
+      setItems(updated.items);
+      setMembers(updated.members);
+      syncAndPropagate(updated);
+      toast.success('Název upraven', {
+        description: `Seznam byl přejmenován na "${updated.name}"`,
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error('Nepodařilo se upravit název seznamu');
     }
   };
 
-  const handleDeleteItem = (id: string) => {
-    const item = items.find(i => i.id === id);
-    setItems(items.filter(item => item.id !== id));
-    if (item) {
+  const handleArchive = async () => {
+    try {
+      const updated = await api.toggleArchiveList(list.id);
+      syncAndPropagate(updated);
+      toast.success(
+          updated.isArchived ? 'Seznam archivován' : 'Seznam obnoven',
+          {
+            description: `"${updated.name}" byl úspěšně ${
+                updated.isArchived ? 'archivován' : 'obnoven'
+            }`,
+          }
+      );
+    } catch (e) {
+      console.error(e);
+      toast.error('Nepodařilo se změnit stav seznamu');
+    }
+  };
+
+  const handleAddItem = async (name: string) => {
+    if (!name.trim()) {
+      toast.error('Název položky nesmí být prázdný');
+      return;
+    }
+
+    try {
+      const newItem = await api.addItem(list.id, name.trim(), currentUserId);
+      const newItems = [newItem, ...items];
+      setItems(newItems);
+      syncAndPropagate({ items: newItems });
+      toast.success('Položka přidána', {
+        description: `"${name}" byla přidána do seznamu`,
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error('Nepodařilo se přidat položku');
+    }
+  };
+
+  const handleToggleItem = async (id: string) => {
+    try {
+      const updatedItem = await api.toggleItemResolved(list.id, id);
+      const newItems = items.map((i) => (i.id === updatedItem.id ? updatedItem : i));
+      setItems(newItems);
+      syncAndPropagate({ items: newItems });
+
+      toast.success(
+          updatedItem.isResolved
+              ? 'Položka vyřešena'
+              : 'Položka označena jako nevyřešená'
+      );
+    } catch (e) {
+      console.error(e);
+      toast.error('Nepodařilo se změnit stav položky');
+    }
+  };
+
+  const handleDeleteItem = async (id: string) => {
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+
+    try {
+      await api.deleteItem(list.id, id);
+      const newItems = items.filter((i) => i.id !== id);
+      setItems(newItems);
+      syncAndPropagate({ items: newItems });
       toast.success('Položka smazána', {
         description: `"${item.name}" byla odstraněna`,
       });
+    } catch (e) {
+      console.error(e);
+      toast.error('Nepodařilo se smazat položku');
     }
   };
 
-  const handleAddMember = (memberName: string) => {
-    // Simulace přidání člena
-    const newMember: Member = {
-      id: `user${Date.now()}`,
-      name: memberName,
-      role: 'member',
-      addedAt: new Date(),
-    };
-    setMembers([...members, newMember]);
-    toast.success('Člen přidán', {
-      description: `${memberName} byl přidán do seznamu`,
-    });
+  const handleAddMember = async (memberName: string) => {
+    if (!memberName.trim()) {
+      toast.error('Jméno člena nesmí být prázdné');
+      return;
+    }
+
+    try {
+      const newMember = await api.addMemberByName(list.id, memberName.trim());
+      const newMembers = [...members, newMember];
+      setMembers(newMembers);
+      syncAndPropagate({ members: newMembers });
+      toast.success('Člen přidán', {
+        description: `${memberName} byl přidán do seznamu`,
+      });
+    } catch (e) {
+      console.error(e);
+      toast.error('Nepodařilo se přidat člena');
+    }
   };
 
-  const handleRemoveMember = (userId: string) => {
-    const member = members.find(m => m.id === userId);
-    setMembers(members.filter(member => member.id !== userId));
-    if (member) {
+  const handleRemoveMember = async (userId: string) => {
+    const member = members.find((m) => m.id === userId);
+    if (!member) return;
+
+    try {
+      await api.removeMember(list.id, userId);
+      const newMembers = members.filter((m) => m.id !== userId);
+      setMembers(newMembers);
+      syncAndPropagate({ members: newMembers });
       toast.success('Člen odebrán', {
         description: `${member.name} byl odebrán ze seznamu`,
       });
+    } catch (e) {
+      console.error(e);
+      toast.error('Nepodařilo se odebrat člena');
     }
   };
 
-  const unresolvedCount = items.filter(item => !item.isResolved).length;
+  const unresolvedCount = items.filter((item) => !item.isResolved).length;
   const totalCount = items.length;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
-        {onBackToDocs && (
-          <Button 
-            variant="ghost" 
-            onClick={onBackToDocs}
-            className="mb-4 gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Zpět na dokumentaci
-          </Button>
-        )}
+      <div className="min-h-screen bg-background">
+        <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
+          {onBackToDocs && (
+              <Button
+                  variant="ghost"
+                  onClick={onBackToDocs}
+                  className="mb-4 gap-2"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Zpět na dokumentaci
+              </Button>
+          )}
 
-        <DetailHeader
-          listName={listName}
-          isOwner={isOwner}
-          onBack={onBack}
-          onUpdateName={handleUpdateName}
-          onArchive={handleArchive}
-        />
-
-        {/* Statistiky */}
-        <div className="mb-6 flex gap-4 text-sm text-muted-foreground">
-          <div>
-            <span className="font-medium">{unresolvedCount}</span> nevyřešených položek
-          </div>
-          <div>
-            <span className="font-medium">{totalCount}</span> celkem
-          </div>
-          <div>
-            <span className="font-medium">{members.length}</span> {members.length === 1 ? 'člen' : members.length < 5 ? 'členové' : 'členů'}
-          </div>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 order-2 lg:order-1">
-            <ItemsSection
-              items={items}
-              onAddItem={handleAddItem}
-              onToggleItem={handleToggleItem}
-              onDeleteItem={handleDeleteItem}
-            />
-          </div>
-
-          <div className="order-1 lg:order-2">
-            <MembersSection
-              members={members}
-              currentUserId={CURRENT_USER_ID}
+          <DetailHeader
+              listName={listName}
               isOwner={isOwner}
-              onAddMember={handleAddMember}
-              onRemoveMember={handleRemoveMember}
-            />
+              onBack={onBack}
+              onUpdateName={handleUpdateName}
+              onArchive={handleArchive}
+              onDelete={onDelete}
+          />
+
+          {/* Statistiky */}
+          <div className="mb-6 flex gap-4 text-sm text-muted-foreground">
+            <div>
+              <span className="font-medium">{unresolvedCount}</span> nevyřešených
+              položek
+            </div>
+            <div>
+              <span className="font-medium">{totalCount}</span> celkem
+            </div>
+            <div>
+              <span className="font-medium">{members.length}</span>{' '}
+              {members.length === 1
+                  ? 'člen'
+                  : members.length < 5
+                      ? 'členové'
+                      : 'členů'}
+            </div>
+          </div>
+
+          <div className="grid lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 order-2 lg:order-1">
+              <ItemsSection
+                  items={items}
+                  onAddItem={handleAddItem}
+                  onToggleItem={handleToggleItem}
+                  onDeleteItem={handleDeleteItem}
+              />
+            </div>
+
+            <div className="order-1 lg:order-2">
+              <MembersSection
+                  members={members}
+                  currentUserId={currentUserId}
+                  isOwner={isOwner}
+                  onAddMember={handleAddMember}
+                  onRemoveMember={handleRemoveMember}
+              />
+            </div>
           </div>
         </div>
       </div>
-    </div>
   );
 }

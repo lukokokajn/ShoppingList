@@ -1,4 +1,3 @@
-import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { Plus, Archive, Trash2 } from 'lucide-react';
 
 interface SidebarProps {
@@ -40,11 +39,7 @@ export function Sidebar({ selectedListId, onSelectList }: SidebarProps) {
       <div className="p-6 border-b border-gray-200">
         <h2 className="mb-1">Shopping Lists</h2>
         <div className="flex items-center gap-2 mt-3">
-          <ImageWithFallback 
-            src={USER.avatar}
-            alt={USER.name}
-            className="w-6 h-6 rounded-full object-cover"
-          />
+
           <div className="flex-1 min-w-0">
             <p className="text-sm truncate">{USER.name}</p>
             <p className="text-xs text-muted-foreground truncate">{USER.email}</p>

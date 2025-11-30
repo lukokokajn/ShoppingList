@@ -9,21 +9,21 @@ interface ListHeaderProps {
 export function ListHeader({ onCreateList, currentUser }: ListHeaderProps) {
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center">
-            <ShoppingCart className="w-6 h-6 text-primary-foreground" />
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-primary rounded-xl flex items-center justify-center shadow-sm">
+            <ShoppingCart className="w-7 h-7 text-primary-foreground" />
           </div>
           <div>
-            <h1>Moje nákupní seznamy</h1>
-            <p className="text-muted-foreground">
-              Přihlášen jako: {currentUser.name}
+            <h1 className="mb-1">Moje nákupní seznamy</h1>
+            <p className="text-muted-foreground text-sm">
+              Přihlášen jako <span className="font-medium">{currentUser.name}</span>
             </p>
           </div>
         </div>
 
-        <Button onClick={onCreateList} className="gap-2">
-          <Plus className="w-4 h-4" />
+        <Button onClick={onCreateList} className="gap-2 shadow-sm" size="lg">
+          <Plus className="w-5 h-5" />
           Nový seznam
         </Button>
       </div>

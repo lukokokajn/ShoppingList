@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { ImageWithFallback } from '../figma/ImageWithFallback';
 import { Edit2, Plus, Trash2, UserPlus, X } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Checkbox } from '../ui/checkbox';
@@ -176,11 +175,7 @@ export function MainContent({ listId }: MainContentProps) {
               <div className="space-y-3">
                 {data.members.map(member => (
                   <div key={member.id} className="flex items-center gap-3 group">
-                    <ImageWithFallback 
-                      src={member.avatar}
-                      alt={member.name}
-                      className="w-10 h-10 rounded-full object-cover"
-                    />
+                    
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <p className="truncate">{member.name}</p>

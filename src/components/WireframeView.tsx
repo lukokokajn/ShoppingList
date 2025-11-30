@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-
-import { 
+import {
   ShoppingCart, 
   Plus, 
   Archive, 
@@ -72,11 +71,7 @@ export function WireframeView() {
                       <div>
                         <h2>Moje nákupní seznamy</h2>
                         <div className="flex items-center gap-2 mt-1">
-                          <ImageWithFallback 
-                            src={USERS[0].avatar}
-                            alt={USERS[0].name}
-                            className="w-6 h-6 rounded-full object-cover border-2 border-white shadow"
-                          />
+
                           <p className="text-muted-foreground">
                             {USERS[0].name}
                           </p>
@@ -117,16 +112,7 @@ export function WireframeView() {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-2">
-                          <ImageWithFallback 
-                            src={USERS[0].avatar}
-                            alt={USERS[0].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
-                          <ImageWithFallback 
-                            src={USERS[1].avatar}
-                            alt={USERS[1].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
+
                         </div>
                         <span className="text-muted-foreground">2 členové</span>
                         <span className="ml-auto bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">
@@ -162,21 +148,7 @@ export function WireframeView() {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-2">
-                          <ImageWithFallback 
-                            src={USERS[1].avatar}
-                            alt={USERS[1].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
-                          <ImageWithFallback 
-                            src={USERS[0].avatar}
-                            alt={USERS[0].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
-                          <ImageWithFallback 
-                            src={USERS[2].avatar}
-                            alt={USERS[2].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
+
                         </div>
                         <span className="text-muted-foreground">3 členové</span>
                       </div>
@@ -209,11 +181,7 @@ export function WireframeView() {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-2">
-                          <ImageWithFallback 
-                            src={USERS[0].avatar}
-                            alt={USERS[0].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
+
                         </div>
                         <span className="text-muted-foreground">1 člen</span>
                         <span className="ml-auto bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">
@@ -249,26 +217,7 @@ export function WireframeView() {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-2">
-                          <ImageWithFallback 
-                            src={USERS[0].avatar}
-                            alt={USERS[0].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
-                          <ImageWithFallback 
-                            src={USERS[1].avatar}
-                            alt={USERS[1].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
-                          <ImageWithFallback 
-                            src={USERS[2].avatar}
-                            alt={USERS[2].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
-                          <ImageWithFallback 
-                            src={USERS[3].avatar}
-                            alt={USERS[3].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
+
                         </div>
                         <span className="text-muted-foreground">4 členové</span>
                         <span className="ml-auto bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">
@@ -304,16 +253,7 @@ export function WireframeView() {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-2">
-                          <ImageWithFallback 
-                            src={USERS[3].avatar}
-                            alt={USERS[3].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
-                          <ImageWithFallback 
-                            src={USERS[0].avatar}
-                            alt={USERS[0].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
+
                         </div>
                         <span className="text-muted-foreground">2 členové</span>
                       </div>
@@ -346,21 +286,7 @@ export function WireframeView() {
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <div className="flex -space-x-2">
-                          <ImageWithFallback 
-                            src={USERS[2].avatar}
-                            alt={USERS[2].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
-                          <ImageWithFallback 
-                            src={USERS[0].avatar}
-                            alt={USERS[0].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
-                          <ImageWithFallback 
-                            src={USERS[1].avatar}
-                            alt={USERS[1].name}
-                            className="w-8 h-8 rounded-full object-cover border-2 border-white shadow"
-                          />
+
                         </div>
                         <span className="text-muted-foreground">3 členové</span>
                       </div>
@@ -433,11 +359,7 @@ export function WireframeView() {
                           </button>
                           <span className="flex-1">Mléko</span>
                           <div className="flex items-center gap-2">
-                            <ImageWithFallback 
-                              src={USERS[0].avatar}
-                              alt={USERS[0].name}
-                              className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                            />
+
                             <button className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Trash2 className="w-4 h-4 text-red-500" />
                             </button>
@@ -451,11 +373,7 @@ export function WireframeView() {
                           </button>
                           <span className="flex-1 line-through text-muted-foreground">Chléb</span>
                           <div className="flex items-center gap-2">
-                            <ImageWithFallback 
-                              src={USERS[1].avatar}
-                              alt={USERS[1].name}
-                              className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                            />
+
                             <button className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Trash2 className="w-4 h-4 text-red-500" />
                             </button>
@@ -469,11 +387,7 @@ export function WireframeView() {
                           </button>
                           <span className="flex-1">Máslo</span>
                           <div className="flex items-center gap-2">
-                            <ImageWithFallback 
-                              src={USERS[0].avatar}
-                              alt={USERS[0].name}
-                              className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                            />
+
                             <button className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Trash2 className="w-4 h-4 text-red-500" />
                             </button>
@@ -487,11 +401,7 @@ export function WireframeView() {
                           </button>
                           <span className="flex-1">Vajíčka</span>
                           <div className="flex items-center gap-2">
-                            <ImageWithFallback 
-                              src={USERS[0].avatar}
-                              alt={USERS[0].name}
-                              className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                            />
+
                             <button className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Trash2 className="w-4 h-4 text-red-500" />
                             </button>
@@ -505,11 +415,7 @@ export function WireframeView() {
                           </button>
                           <span className="flex-1 line-through text-muted-foreground">Rajčata</span>
                           <div className="flex items-center gap-2">
-                            <ImageWithFallback 
-                              src={USERS[1].avatar}
-                              alt={USERS[1].name}
-                              className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                            />
+
                             <button className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Trash2 className="w-4 h-4 text-red-500" />
                             </button>
@@ -523,11 +429,7 @@ export function WireframeView() {
                           </button>
                           <span className="flex-1">Brambory</span>
                           <div className="flex items-center gap-2">
-                            <ImageWithFallback 
-                              src={USERS[1].avatar}
-                              alt={USERS[1].name}
-                              className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                            />
+
                             <button className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Trash2 className="w-4 h-4 text-red-500" />
                             </button>
@@ -541,11 +443,7 @@ export function WireframeView() {
                           </button>
                           <span className="flex-1">Sýr</span>
                           <div className="flex items-center gap-2">
-                            <ImageWithFallback 
-                              src={USERS[0].avatar}
-                              alt={USERS[0].name}
-                              className="w-6 h-6 rounded-full object-cover border border-gray-200"
-                            />
+
                             <button className="opacity-0 group-hover:opacity-100 transition-opacity">
                               <Trash2 className="w-4 h-4 text-red-500" />
                             </button>
@@ -562,11 +460,7 @@ export function WireframeView() {
                     <div className="space-y-3 mb-6">
                       {/* Owner */}
                       <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
-                        <ImageWithFallback 
-                          src={USERS[0].avatar}
-                          alt={USERS[0].name}
-                          className="w-10 h-10 rounded-full object-cover shadow"
-                        />
+
                         <div className="flex-1 min-w-0">
                           <p className="truncate">{USERS[0].name}</p>
                           <span className="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs">
@@ -577,11 +471,7 @@ export function WireframeView() {
 
                       {/* Member */}
                       <div className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200 group hover:bg-gray-50">
-                        <ImageWithFallback 
-                          src={USERS[1].avatar}
-                          alt={USERS[1].name}
-                          className="w-10 h-10 rounded-full object-cover shadow"
-                        />
+
                         <div className="flex-1 min-w-0">
                           <p className="truncate">{USERS[1].name}</p>
                           <span className="text-xs text-muted-foreground">
